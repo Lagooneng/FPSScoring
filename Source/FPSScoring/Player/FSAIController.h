@@ -17,6 +17,8 @@ class FPSSCORING_API AFSAIController : public AAIController
 public:
 	AFSAIController();
 
+	void SetPlayer();
+
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
 	virtual void BeginPlay() override;

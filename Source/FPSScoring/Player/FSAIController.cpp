@@ -37,6 +37,15 @@ void AFSAIController::OnPossess(APawn* InPawn)
 		{
 			UE_LOG(LogTemp, Log, TEXT("RunBehaviorTree Failed"));
 		}
+		// Spawn 시 이게 작동
+		AActor* PlayerActor = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+		if (PlayerActor)
+		{
+			if (Blackboard)
+			{
+				Blackboard->SetValueAsObject(PlayerKey, PlayerActor);
+			}
+		}
 	}
 }
 
@@ -49,14 +58,31 @@ void AFSAIController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// 맵에다 Patrol 깔아두면 이게 작동
 	AActor* PlayerActor = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 	if (PlayerActor)
 	{
-		Blackboard->SetValueAsObject(PlayerKey, PlayerActor);
-		UE_LOG(LogTemp, Log, TEXT("Blackboard Player set: %s"), *PlayerActor->GetName());
+		if ( Blackboard )
+		{
+			Blackboard->SetValueAsObject(PlayerKey, PlayerActor);
+		}
+		
+		//UE_LOG(LogTemp, Log, TEXT("Blackboard Player set: %s"), *PlayerActor->GetName());
 	}
 	else
 	{
 		UE_LOG(LogTemp, Log, TEXT("No Player"));
+	}
+}
+
+void AFSAIController::SetPlayer()
+{
+	AActor* PlayerActor = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (PlayerActor)
+	{
+		if (Blackboard)
+		{
+			Blackboard->SetValueAsObject(PlayerKey, PlayerActor);
+		}
 	}
 }

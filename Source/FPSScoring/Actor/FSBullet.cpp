@@ -21,7 +21,7 @@ AFSBullet::AFSBullet()
 
 	StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComp"));
 
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMeshRef(TEXT("/Script/Engine.StaticMesh'/Game/Mesh/MaterialSphere.MaterialSphere'"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> StaticMeshRef(TEXT("/Script/Engine.StaticMesh'/Game/Mesh/SM_Bullet.SM_Bullet'"));
 	
 	if (StaticMeshRef.Succeeded())
 	{

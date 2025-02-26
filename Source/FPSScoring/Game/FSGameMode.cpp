@@ -9,8 +9,6 @@
 
 AFSGameMode::AFSGameMode()
 {
-    GameTime = 60.0f;
-
     static ConstructorHelpers::FClassFinder<UUserWidget> WidgetRef(TEXT("/Game/Blueprint/UI/ScoreUI.ScoreUI_C"));
     if ( WidgetRef.Succeeded() )
     {
@@ -30,7 +28,7 @@ void AFSGameMode::BeginPlay()
 {
     Super::BeginPlay();
 
-    GameTime = 60.0f;
+    GameTime = 300.0f;
 
     if ( ScoreWidgetClass )
     {

@@ -41,12 +41,6 @@ AFSCharacterPlayer::AFSCharacterPlayer()
 	{
 		ShootAction = InputActionShootRef.Object;
 	}
-
-	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionReloadLevelRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_ReloadLevel.IA_ReloadLevel'"));
-	if (nullptr != InputActionReloadLevelRef.Object)
-	{
-		ReloadLevelAction = InputActionReloadLevelRef.Object;
-	}
 }
 
 void AFSCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -59,7 +53,6 @@ void AFSCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AFSCharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AFSCharacterPlayer::Shoot);
 	EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Completed, this, &AFSCharacterPlayer::ShootEnd);
-	EnhancedInputComponent->BindAction(ReloadLevelAction, ETriggerEvent::Triggered, this, &AFSCharacterPlayer::ReloadLevel);
 }
 
 void AFSCharacterPlayer::BeginPlay()
@@ -123,9 +116,4 @@ void AFSCharacterPlayer::Shoot()
 void AFSCharacterPlayer::ShootEnd()
 {
 	bIsShooted = false;
-}
-
-void AFSCharacterPlayer::ReloadLevel()
-{
-	UGameplayStatics::OpenLevel(this, FName("L_FPS"));
 }
