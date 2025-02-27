@@ -14,6 +14,8 @@ class FPSSCORING_API AFSBullet : public AActor
 public:	
 	AFSBullet();
 
+	void Reset();
+
 protected:
 	UFUNCTION()
 	void OnComponentBeginOverlapCallback(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult);
@@ -26,4 +28,8 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<class UProjectileMovementComponent> Movement;
+
+	void PoolBullet();
+
+	FTimerHandle PoolingTimer;
 };

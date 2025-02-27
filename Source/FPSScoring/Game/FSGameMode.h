@@ -6,6 +6,8 @@
 #include "GameFramework/GameMode.h"
 #include "FSGameMode.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPoolInitialized);
+
 /**
  * 
  */
@@ -18,12 +20,15 @@ public:
 	AFSGameMode();
 
 	virtual void BeginPlay() override;
+	virtual void StartPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 
 	void SetScoreText(FString InText);
 	void SetTimeText(float InTime);
 	void SetMaxScoreText(FString InText);
 	void EndGame();
+
+	FOnPoolInitialized OnPoolInitialized;
 
 protected:
 	UPROPERTY()

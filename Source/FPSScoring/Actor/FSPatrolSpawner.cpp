@@ -5,12 +5,14 @@
 #include "Engine/World.h"
 #include "Character/FSCharacterPatrol.h"
 #include "Components/StaticMeshComponent.h"
+#include "Subsystem/FSObjectPoolSubsystem.h"
+#include "Game/FSGameMode.h"
 
 // Sets default values
 AFSPatrolSpawner::AFSPatrolSpawner()
 {
-    SpawnNum = 4;
-    MaxSpawnNum = 7;
+    SpawnCount = 0;
+    MaxSpawnCount = 30;
 
     StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComp"));
     RootComponent = StaticMeshComp;
@@ -24,6 +26,8 @@ AFSPatrolSpawner::AFSPatrolSpawner()
 
 void AFSPatrolSpawner::SpawnPatrol()
 {
+    if (SpawnCount >= MaxSpawnCount) return;
+
     FActorSpawnParameters SpawnParams;
     SpawnParams.Owner = this;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
@@ -31,22 +35,30 @@ void AFSPatrolSpawner::SpawnPatrol()
     FVector SpawnLocation = GetActorLocation(); 
     FRotator SpawnRotation = FRotator::ZeroRotator;
 
-    for (int32 i = 0; i < SpawnNum; ++i)
+    UFSObjectPoolSubsystem* ObjectPool = GetGameInstance()->GetSubsystem<UFSObjectPoolSubsystem>();
+    if (ObjectPool)
     {
-        GetWorld()->SpawnActor<AFSCharacterPatrol>(AFSCharacterPatrol::StaticClass(), SpawnLocation, SpawnRotation, SpawnParams);
-    }
+        if (SpawnCount >= MaxSpawnCount) return;
 
-    ++SpawnNum;
-    if (SpawnNum > MaxSpawnNum) SpawnNum = MaxSpawnNum;
+        ++SpawnCount;
+        ObjectPool->GetPooledObject(AFSCharacterPatrol::StaticClass(), SpawnLocation, SpawnRotation);
+    }
 }
 
-// Called when the game starts or when spawned
 void AFSPatrolSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 	
+    if ( AFSGameMode* GameMode = Cast<AFSGameMode>(GetWorld()->GetAuthGameMode()) )
+    {
+        GameMode->OnPoolInitialized.AddDynamic(this, &AFSPatrolSpawner::StartSpawn);
+    }
+}
+
+void AFSPatrolSpawner::StartSpawn()
+{
     SpawnPatrol();
-    GetWorld()->GetTimerManager().SetTimer(SpawningHandle, this, &AFSPatrolSpawner::SpawnPatrol, 5.0f, true);
+    GetWorld()->GetTimerManager().SetTimer(SpawningHandle, this, &AFSPatrolSpawner::SpawnPatrol, 1.0f, true);
 }
 
 

@@ -12,13 +12,14 @@ class FPSSCORING_API AFSPatrolSpawner : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	AFSPatrolSpawner();
 	void SpawnPatrol();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void StartSpawn();
 
 	UPROPERTY()
 	TObjectPtr<class UStaticMeshComponent> StaticMeshComp;
@@ -26,6 +27,6 @@ protected:
 	FTimerHandle SpawningHandle;
 
 private:
-	int32 SpawnNum;
-	int32 MaxSpawnNum;
+	int32 SpawnCount;
+	int32 MaxSpawnCount;
 };

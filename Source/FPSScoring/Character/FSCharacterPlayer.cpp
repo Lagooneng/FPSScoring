@@ -8,6 +8,7 @@
 #include "EnhancedInputComponent.h"
 #include "Actor/FSBullet.h"
 #include "Kismet/GameplayStatics.h"
+#include "Subsystem/FSObjectPoolSubsystem.h"
 
 AFSCharacterPlayer::AFSCharacterPlayer()
 {
@@ -104,13 +105,20 @@ void AFSCharacterPlayer::Shoot()
 	if (bIsShooted) return;
 	bIsShooted = true;
 
-	FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
-	FRotator SpawnRotation = GetControlRotation();
+	UFSObjectPoolSubsystem* ObjectPool = GetGameInstance()->GetSubsystem<UFSObjectPoolSubsystem>();
+	if ( ObjectPool )
+	{
+		FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
+		FRotator SpawnRotation = GetControlRotation();
 
-	FActorSpawnParameters SpawnParams;
+		AFSBullet* Bullet = Cast<AFSBullet>(ObjectPool->GetPooledObject(AFSBullet::StaticClass(), SpawnLocation, SpawnRotation));
+		Bullet->Reset();
+	}
+
+	/*FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn; 
 
-	AFSBullet* Bullet = GetWorld()->SpawnActor<AFSBullet>(AFSBullet::StaticClass(), SpawnLocation, SpawnRotation, SpawnParams);
+	AFSBullet* Bullet = GetWorld()->SpawnActor<AFSBullet>(AFSBullet::StaticClass(), SpawnLocation, SpawnRotation, SpawnParams);*/
 }
 
 void AFSCharacterPlayer::ShootEnd()

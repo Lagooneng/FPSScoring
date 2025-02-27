@@ -86,3 +86,13 @@ void AFSAIController::SetPlayer()
 		}
 	}
 }
+
+void AFSAIController::OnBehaviorTree()
+{
+	RunBehaviorTree(BTAsset);
+}
+
+void AFSAIController::OffBehaviorTree()
+{
+	BrainComponent->StopLogic(TEXT("Off"));
+}

@@ -18,6 +18,8 @@ public:
 	AFSAIController();
 
 	void SetPlayer();
+	void OnBehaviorTree();
+	void OffBehaviorTree();
 
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;

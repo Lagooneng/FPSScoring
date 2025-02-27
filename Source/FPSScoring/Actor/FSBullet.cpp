@@ -9,6 +9,8 @@
 #include "Physics/FSCollision.h"
 #include "Subsystem/FSScoreSubsystem.h"
 #include "Game/FSGameMode.h"
+#include "Subsystem/FSObjectPoolSubsystem.h"
+#include "Character/FSCharacterPatrol.h"
 
 // Sets default values
 AFSBullet::AFSBullet()
@@ -38,7 +40,18 @@ AFSBullet::AFSBullet()
 	Movement->bRotationFollowsVelocity = true;
 	Movement->bShouldBounce = false;
 
-	InitialLifeSpan = 3.0f;
+	//InitialLifeSpan = 3.0f;
+}
+
+void AFSBullet::Reset()
+{
+	if (Movement)
+	{
+		Movement->StopMovementImmediately();
+		Movement->Velocity = GetActorForwardVector() * Movement->InitialSpeed;
+	}
+
+	GetWorld()->GetTimerManager().SetTimer(PoolingTimer, this, &AFSBullet::PoolBullet, 3.0f, false);
 }
 
 void AFSBullet::OnComponentBeginOverlapCallback(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepHitResult)
@@ -53,7 +66,23 @@ void AFSBullet::OnComponentBeginOverlapCallback(UPrimitiveComponent* OverlappedC
 		GameMode->SetScoreText(FString::FromInt(ScoreSubsystem->GetScore()));
 	}
 
-	OtherActor->Destroy();
+	if ( Cast<AFSCharacterPatrol>(OtherActor) )
+	{
+		UFSObjectPoolSubsystem* ObjectPool = GetGameInstance()->GetSubsystem<UFSObjectPoolSubsystem>();
+		if (ObjectPool)
+		{
+			ObjectPool->ReturnPooledObject(OtherActor);
+		}
+	}
 
-	Destroy();
+	PoolBullet();
+}
+
+void AFSBullet::PoolBullet()
+{
+	UFSObjectPoolSubsystem* ObjectPool = GetGameInstance()->GetSubsystem<UFSObjectPoolSubsystem>();
+	if (ObjectPool)
+	{
+		ObjectPool->ReturnPooledObject(Cast<AActor>(this));
+	}
 }

@@ -5,7 +5,9 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "Game/FSGameInstance.h"
-
+#include "Subsystem/FSObjectPoolSubsystem.h"
+#include "Actor/FSBullet.h"
+#include "Character/FSCharacterPatrol.h"
 
 AFSGameMode::AFSGameMode()
 {
@@ -28,7 +30,7 @@ void AFSGameMode::BeginPlay()
 {
     Super::BeginPlay();
 
-    GameTime = 300.0f;
+    GameTime = 120.0f;
 
     if ( ScoreWidgetClass )
     {
@@ -50,6 +52,20 @@ void AFSGameMode::BeginPlay()
         GameInstance->LoadGame();
         SetMaxScoreText(FString::Printf(TEXT("%d"), GameInstance->GetMaxScore()));
     }
+
+    UFSObjectPoolSubsystem* ObjectPool = GetGameInstance()->GetSubsystem<UFSObjectPoolSubsystem>();
+    if (ObjectPool)
+    {
+        ObjectPool->InitializePool(AFSBullet::StaticClass(), 20);
+        ObjectPool->InitializePool(AFSCharacterPatrol::StaticClass(), 60);
+    }
+
+}
+
+void AFSGameMode::StartPlay()
+{
+    Super::StartPlay();
+    OnPoolInitialized.Broadcast();
 }
 
 void AFSGameMode::Tick(float DeltaSeconds)
