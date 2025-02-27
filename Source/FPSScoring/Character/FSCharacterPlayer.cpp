@@ -114,11 +114,6 @@ void AFSCharacterPlayer::Shoot()
 		AFSBullet* Bullet = Cast<AFSBullet>(ObjectPool->GetPooledObject(AFSBullet::StaticClass(), SpawnLocation, SpawnRotation));
 		Bullet->Reset();
 	}
-
-	/*FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn; 
-
-	AFSBullet* Bullet = GetWorld()->SpawnActor<AFSBullet>(AFSBullet::StaticClass(), SpawnLocation, SpawnRotation, SpawnParams);*/
 }
 
 void AFSCharacterPlayer::ShootEnd()
