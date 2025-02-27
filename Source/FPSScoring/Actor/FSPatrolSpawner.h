@@ -29,4 +29,6 @@ protected:
 private:
 	int32 SpawnCount;
 	int32 MaxSpawnCount;
+
+	float Offset;
 };

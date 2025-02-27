@@ -14,6 +14,8 @@ AFSPatrolSpawner::AFSPatrolSpawner()
     SpawnCount = 0;
     MaxSpawnCount = 30;
 
+    Offset = 500.0f;
+
     StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComp"));
     RootComponent = StaticMeshComp;
 
@@ -33,6 +35,9 @@ void AFSPatrolSpawner::SpawnPatrol()
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
     FVector SpawnLocation = GetActorLocation(); 
+    SpawnLocation.X += FMath::RandRange(-Offset, Offset);
+    SpawnLocation.Y += FMath::RandRange(-Offset, Offset);
+
     FRotator SpawnRotation = FRotator::ZeroRotator;
 
     UFSObjectPoolSubsystem* ObjectPool = GetGameInstance()->GetSubsystem<UFSObjectPoolSubsystem>();
