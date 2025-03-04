@@ -108,7 +108,7 @@ void AFSCharacterPlayer::Shoot()
 	UFSObjectPoolSubsystem* ObjectPool = GetGameInstance()->GetSubsystem<UFSObjectPoolSubsystem>();
 	if ( ObjectPool )
 	{
-		FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f;
+		FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f + FVector(0.0f, 0.0f, 50.0f);
 		FRotator SpawnRotation = GetControlRotation();
 
 		AFSBullet* Bullet = Cast<AFSBullet>(ObjectPool->GetPooledObject(AFSBullet::StaticClass(), SpawnLocation, SpawnRotation));
