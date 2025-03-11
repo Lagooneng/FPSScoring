@@ -21,6 +21,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
 	virtual void SetDead() override;
 	virtual void PossessedBy(AController* NewController) override;
 
@@ -48,5 +49,15 @@ protected:
 	TObjectPtr<class UInputAction> LookAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class UInputAction> ReloadBulletAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputAction> ShootAction;
+
+// Bullet
+protected:
+	void ReloadBullet(int32 InRemainedReloadTime);
+	void ForceReloadBullet();
+	FTimerHandle ReloadTimerHandle;
+	int32 BulletCount;
 };

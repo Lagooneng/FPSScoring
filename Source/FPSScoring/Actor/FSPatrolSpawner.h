@@ -17,6 +17,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
 
 	UFUNCTION()
 	void StartSpawn();
@@ -27,8 +28,6 @@ protected:
 	FTimerHandle SpawningHandle;
 
 private:
-	int32 SpawnCount;
-	int32 MaxSpawnCount;
 
 	float Offset;
 };

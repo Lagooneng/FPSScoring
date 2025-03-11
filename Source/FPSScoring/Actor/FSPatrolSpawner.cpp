@@ -11,9 +11,6 @@
 // Sets default values
 AFSPatrolSpawner::AFSPatrolSpawner()
 {
-    SpawnCount = 0;
-    MaxSpawnCount = 30;
-
     Offset = 500.0f;
 
     StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComp"));
@@ -28,8 +25,6 @@ AFSPatrolSpawner::AFSPatrolSpawner()
 
 void AFSPatrolSpawner::SpawnPatrol()
 {
-    if (SpawnCount >= MaxSpawnCount) return;
-
     FActorSpawnParameters SpawnParams;
     SpawnParams.Owner = this;
     SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
@@ -43,9 +38,6 @@ void AFSPatrolSpawner::SpawnPatrol()
     UFSObjectPoolSubsystem* ObjectPool = GetGameInstance()->GetSubsystem<UFSObjectPoolSubsystem>();
     if (ObjectPool)
     {
-        if (SpawnCount >= MaxSpawnCount) return;
-
-        ++SpawnCount;
         ObjectPool->GetPooledObject(AFSCharacterPatrol::StaticClass(), SpawnLocation, SpawnRotation);
     }
 }
@@ -58,6 +50,15 @@ void AFSPatrolSpawner::BeginPlay()
     {
         GameMode->OnPoolInitialized.AddDynamic(this, &AFSPatrolSpawner::StartSpawn);
     }
+}
+
+void AFSPatrolSpawner::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    if (GetWorld())
+    {
+        GetWorld()->GetTimerManager().ClearTimer(SpawningHandle);
+    }
+    Super::EndPlay(EndPlayReason);
 }
 
 void AFSPatrolSpawner::StartSpawn()

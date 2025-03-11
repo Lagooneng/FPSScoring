@@ -9,6 +9,7 @@
 #include "Actor/FSBullet.h"
 #include "Kismet/GameplayStatics.h"
 #include "Subsystem/FSObjectPoolSubsystem.h"
+#include "Game/FSGameMode.h"
 
 AFSCharacterPlayer::AFSCharacterPlayer()
 {
@@ -37,11 +38,19 @@ AFSCharacterPlayer::AFSCharacterPlayer()
 		LookAction = InputActionLookRef.Object;
 	}
 
+	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionReloadBulletRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_ReloadBullet.IA_ReloadBullet'"));
+	if (nullptr != InputActionReloadBulletRef.Object)
+	{
+		ReloadBulletAction = InputActionReloadBulletRef.Object;
+	}
+
 	static ConstructorHelpers::FObjectFinder<UInputAction> InputActionShootRef(TEXT("/Script/EnhancedInput.InputAction'/Game/Input/Actions/IA_Shoot.IA_Shoot'"));
 	if (nullptr != InputActionLookRef.Object)
 	{
 		ShootAction = InputActionShootRef.Object;
 	}
+
+	BulletCount = 30;
 }
 
 void AFSCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -54,11 +63,14 @@ void AFSCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AFSCharacterPlayer::Look);
 	EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AFSCharacterPlayer::Shoot);
 	EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Completed, this, &AFSCharacterPlayer::ShootEnd);
+	EnhancedInputComponent->BindAction(ReloadBulletAction, ETriggerEvent::Triggered, this, &AFSCharacterPlayer::ForceReloadBullet);
 }
 
 void AFSCharacterPlayer::BeginPlay()
 {
 	Super::BeginPlay();
+
+	BulletCount = 30;
 
 	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
 
@@ -67,6 +79,15 @@ void AFSCharacterPlayer::BeginPlay()
 		Subsystem->AddMappingContext(MappingContext, 0); 
 	}
 
+}
+
+void AFSCharacterPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ReloadTimerHandle);
+	}
+	Super::EndPlay(EndPlayReason);
 }
 
 void AFSCharacterPlayer::SetDead()
@@ -108,15 +129,79 @@ void AFSCharacterPlayer::Shoot()
 	UFSObjectPoolSubsystem* ObjectPool = GetGameInstance()->GetSubsystem<UFSObjectPoolSubsystem>();
 	if ( ObjectPool )
 	{
-		FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f + FVector(0.0f, 0.0f, 50.0f);
-		FRotator SpawnRotation = GetControlRotation();
+		if ( BulletCount > 0 )
+		{
+			FVector SpawnLocation = GetActorLocation() + GetActorForwardVector() * 100.0f + FVector(0.0f, 0.0f, 50.0f);
+			FRotator SpawnRotation = GetControlRotation();
 
-		AFSBullet* Bullet = Cast<AFSBullet>(ObjectPool->GetPooledObject(AFSBullet::StaticClass(), SpawnLocation, SpawnRotation));
-		Bullet->Reset();
+			AFSBullet* Bullet = Cast<AFSBullet>(ObjectPool->GetPooledObject(AFSBullet::StaticClass(), SpawnLocation, SpawnRotation));
+			Bullet->Reset();
+
+			--BulletCount;
+
+			if ( BulletCount == 0 )
+			{
+				// Reload
+				int32 ReloadTime = 3;
+				GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle, 
+					[this, ReloadTime]() 
+					{
+						ReloadBullet(ReloadTime);
+					}, 
+					1.0f, false);
+			}
+
+			AFSGameMode* GameMode = Cast<AFSGameMode>(GetWorld()->GetAuthGameMode());
+			if ( GameMode )
+			{
+				GameMode->SetBulletText(BulletCount, 3);
+			}
+		}
 	}
 }
 
 void AFSCharacterPlayer::ShootEnd()
 {
 	bIsShooted = false;
+}
+
+void AFSCharacterPlayer::ReloadBullet(int32 InRemainedReloadTime)
+{
+	if ( GetWorld() == nullptr )
+	{
+		BulletCount = 30;
+		return;
+	}
+
+	if ( InRemainedReloadTime == 1 )
+	{
+		BulletCount = 30;
+	}
+	else
+	{
+		--InRemainedReloadTime;
+		GetWorld()->GetTimerManager().SetTimer(ReloadTimerHandle,
+			[this, InRemainedReloadTime]()
+			{
+				ReloadBullet(InRemainedReloadTime);
+			},
+			1.0f, false);
+	}
+
+	AFSGameMode* GameMode = Cast<AFSGameMode>(GetWorld()->GetAuthGameMode());
+	if (GameMode)
+	{
+		GameMode->SetBulletText(BulletCount, InRemainedReloadTime);
+	}
+}
+
+void AFSCharacterPlayer::ForceReloadBullet()
+{
+	if ( BulletCount <= 0 )
+	{
+		return;
+	}
+
+	BulletCount = 0;
+	ReloadBullet(4);
 }

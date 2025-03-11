@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "Game/FSGameMode.h"
@@ -17,8 +17,13 @@ AFSGameMode::AFSGameMode()
         ScoreWidgetClass = WidgetRef.Class;
     }
 
-    BaseString = TEXT("Prev Max Score : ");
+    static ConstructorHelpers::FClassFinder<UUserWidget> BulletWidgetRef(TEXT("/Game/Blueprint/UI/BulletUI.BulletUI_C"));
+    if (BulletWidgetRef.Succeeded())
+    {
+        BulletWidgetClass = BulletWidgetRef.Class;
+    }
 
+    BaseString = TEXT("Prev Max Score : ");
     static ConstructorHelpers::FClassFinder<UUserWidget> MaxScoreWidgetRef(TEXT("/Game/Blueprint/UI/MaxScoreUI.MaxScoreUI_C"));
     if (MaxScoreWidgetRef.Succeeded())
     {
@@ -30,7 +35,7 @@ void AFSGameMode::BeginPlay()
 {
     Super::BeginPlay();
 
-    GameTime = 120.0f;
+    GameTime = 90.0f;
 
     if ( ScoreWidgetClass )
     {
@@ -39,12 +44,20 @@ void AFSGameMode::BeginPlay()
         SetScoreText(FString::Printf(TEXT("%d"), 0));
     }
 
-    if ( MaxScoreWidgetClass )
+    if (MaxScoreWidgetClass)
     {
         MaxScoreWidget = CreateWidget<UUserWidget>(GetWorld(), MaxScoreWidgetClass);
         MaxScoreWidget->AddToViewport();
         MaxScoreWidget->SetVisibility(ESlateVisibility::Hidden);
     }
+
+    if ( BulletWidgetClass )
+    {
+        BulletWidget = CreateWidget<UUserWidget>(GetWorld(), BulletWidgetClass);
+        BulletWidget->AddToViewport(1);
+        SetBulletText(30, 0);
+    }
+
 
     UFSGameInstance* GameInstance = Cast<UFSGameInstance>(GetGameInstance());
     if (GameInstance)
@@ -135,6 +148,29 @@ void AFSGameMode::SetMaxScoreText(FString InText)
     }
 }
 
+void AFSGameMode::SetBulletText(int32 InBulletCount, int32 InReloadTime)
+{
+    if ( BulletWidget )
+    {
+        UUserWidget* WidgetInstance = BulletWidget.Get();
+        if (WidgetInstance)
+        {
+            UTextBlock* BulletText = Cast<UTextBlock>(WidgetInstance->GetWidgetFromName(TEXT("BulletText")));
+            if (BulletText)
+            {
+                if (InBulletCount <= 0)
+                {
+                    BulletText->SetText( FText::FromString(FString::Printf(TEXT("Relaoding .. %d"), InReloadTime)));
+                }
+                else
+                {
+                    BulletText->SetText(FText::FromString(FString::Printf(TEXT("Bullet : %d"), InBulletCount)));
+                }
+            }
+        }
+    }
+}
+
 void AFSGameMode::EndGame()
 {
     if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
@@ -148,8 +184,8 @@ void AFSGameMode::EndGame()
     if (GameInstance) 
     {
         GameInstance->SaveGame(); 
-
     }
     
     MaxScoreWidget->SetVisibility(ESlateVisibility::Visible);
+    BulletWidget->SetVisibility(ESlateVisibility::Hidden);
 }

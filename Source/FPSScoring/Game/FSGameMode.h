@@ -26,6 +26,7 @@ public:
 	void SetScoreText(FString InText);
 	void SetTimeText(float InTime);
 	void SetMaxScoreText(FString InText);
+	void SetBulletText(int32 InBulletCount, int32 InReloadTime);
 	void EndGame();
 
 	FOnPoolInitialized OnPoolInitialized;
@@ -36,6 +37,13 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
 	TObjectPtr<UUserWidget> ScoreWidget;
+
+protected:
+	UPROPERTY()
+	TSubclassOf<UUserWidget> BulletWidgetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget")
+	TObjectPtr<UUserWidget> BulletWidget;
 
 protected:
 	UPROPERTY()
